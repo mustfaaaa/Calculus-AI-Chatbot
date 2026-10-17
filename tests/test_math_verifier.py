@@ -6,6 +6,9 @@ from aiService.services.math_verifier import verify_cal_math
 @pytest.mark.parametrize("boxed,verdict", [
     (r"\boxed{cos(x)}", True),
     (r"\boxed{\cos(x)}", True),
+    (r"\boxed{\cos\!\left(x\right)}", True),
+    (r"\boxed{\cos\,\left(x\right)}", True),
+    (r"\boxed{-\cos\!\left(x\right)}", False),
     (r"\boxed{-\cos(x)}", False),
     (r"\boxed{unsupported\command{x}}", None),
 ])

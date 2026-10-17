@@ -553,6 +553,24 @@ async def get_session_messages(request: Request):
     return await get_conversation_history(request)
 
 #chat endpoint function
+def _valid_chat_body(body):
+    """Validate browser input before history handling or provider calls."""
+    if not isinstance(body, dict):
+        return False
+    messages = body.get("messages")
+    return (
+        isinstance(messages, list) and bool(messages)
+        and all(isinstance(item, dict)
+                and item.get("role") in ("user", "assistant")
+                and isinstance(item.get("content"), str)
+                and bool(item["content"].strip()) for item in messages)
+        and messages[-1]["role"] == "user"
+        and isinstance(body.get("context", ""), str)
+        and (body.get("topic_key") is None or isinstance(body["topic_key"], str))
+        and isinstance(body.get("page_url", "/"), str)
+    )
+
+
 async def chat_endpoint(request: Request):
     """
     POST /api/chat - Main chat endpoint that combines LLM calls with DB storage
@@ -570,14 +588,16 @@ async def chat_endpoint(request: Request):
     except Exception:
         pass  # Guest user
 
-    rate_limit_error = await _rate_limiter.check_limit(request, user_id)
-    if rate_limit_error:
-        return json_response(rate_limit_error, 429)
-
     try:
         body = await request.json()
     except Exception:
         return json_response({"detail": "Invalid JSON body"}, 400)
+
+    if not _valid_chat_body(body):
+        return json_response({"detail": "A valid conversation ending with a user message is required"}, 400)
+    rate_limit_error = await _rate_limiter.check_limit(request, user_id)
+    if rate_limit_error:
+        return json_response(rate_limit_error, 429)
 
     messages  = body.get('messages', [])
     context   = body.get('context', '')
@@ -798,14 +818,16 @@ async def chat_stream_endpoint(request: Request):
     except Exception:
         pass  # Guest user
 
-    rate_limit_error = await _rate_limiter.check_limit(request, user_id)
-    if rate_limit_error:
-        return json_response(rate_limit_error, 429)
-
     try:
         body = await request.json()
     except Exception:
         return json_response({"detail": "Invalid JSON body"}, 400)
+
+    if not _valid_chat_body(body):
+        return json_response({"detail": "A valid conversation ending with a user message is required"}, 400)
+    rate_limit_error = await _rate_limiter.check_limit(request, user_id)
+    if rate_limit_error:
+        return json_response(rate_limit_error, 429)
 
     messages  = body.get('messages', [])
     context   = body.get('context', '')

@@ -20,6 +20,9 @@ def preprocess_math_expr(expr: str) -> str:
     """
     if not expr:
         return expr
+    # Delimiter sizing and spacing do not change the expression's value.
+    expr = re.sub(r'\\(?:left|right)\b', '', expr)
+    expr = re.sub(r'\\[!,;:]', '', expr)
     # Standard LaTeX function names denote the same functions as SymPy syntax.
     # Keep this allowlist narrow; unsupported LaTeX remains unverifiable.
     expr = re.sub(r'\\(sin|cos|tan|exp|log|ln)\b',
