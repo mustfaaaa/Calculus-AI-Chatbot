@@ -20,6 +20,13 @@ def preprocess_math_expr(expr: str) -> str:
     """
     if not expr:
         return expr
+    # Delimiter sizing and spacing do not change the expression's value.
+    expr = re.sub(r'\\(?:left|right)\b', '', expr)
+    expr = re.sub(r'\\[!,;:]', '', expr)
+    # Standard LaTeX function names denote the same functions as SymPy syntax.
+    # Keep this allowlist narrow; unsupported LaTeX remains unverifiable.
+    expr = re.sub(r'\\(sin|cos|tan|exp|log|ln)\b',
+                  lambda match: 'log' if match.group(1) == 'ln' else match.group(1), expr)
     expr = expr.replace('^', '**')
     expr = re.sub(r'(\d)([a-zA-Z(])', r'\1*\2', expr)
     expr = re.sub(r'([a-zA-Z])(\d)', r'\1*\2', expr)
@@ -203,4 +210,4 @@ def verify_cal_math(question_text: str, cal_response: str) -> Tuple[Optional[boo
         is_correct = diff == 0
         return is_correct, sympy_result, None
     except Exception:
-        return False, sympy_result, "Could not parse Cal's boxed answer for comparison."
+        return None, sympy_result, "Could not parse Cal's boxed answer for comparison."

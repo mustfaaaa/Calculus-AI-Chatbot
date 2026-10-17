@@ -165,6 +165,7 @@
   /* ── Window Header ────────────────────────────────────────────────────────── */
   .cb-window-header {
     display: flex;
+    gap: 0.5rem;
     align-items: center;
     justify-content: space-between;
     padding: 1rem 1.25rem;
@@ -217,6 +218,7 @@
   
   .cb-header-info {
     display: flex;
+    flex: 1;
     flex-direction: column;
     min-width: 0;
     gap: 1px;
@@ -289,6 +291,12 @@
   .cb-icon-btn:hover {
     background: rgba(240, 198, 111, 0.15);
     color: var(--gold-2);
+  }
+
+  /* The shared icon button width must not squeeze the New Chat label. */
+  .cb-icon-btn.cb-new-chat-btn {
+    width: auto;
+    flex-shrink: 0;
   }
   
   .cb-icon-btn--close:hover {
@@ -1194,6 +1202,19 @@
   
   /* ── Mobile Responsive ────────────────────────────────────────────────────── */
   @media (max-width: 640px) {
+    .cb-icon-btn.cb-new-chat-btn {
+      width: 30px;
+      padding: 0;
+    }
+
+    .cb-new-chat-btn > span:last-child {
+      display: none;
+    }
+
+    .cb-bubble--open {
+      display: none;
+    }
+
     .cb-bubble {
       bottom: 16px;
       right: 16px;
@@ -1383,4 +1404,13 @@
   color: #8a6d00;
   font-size: 0.85rem;
   font-weight: 600;
+}
+.cb-demo-notice {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  background: rgba(190, 140, 40, 0.1);
+  border-bottom: 1px solid rgba(190, 140, 40, 0.2);
+  color: inherit;
+  font-size: 12px;
+  line-height: 1.4;
 }
